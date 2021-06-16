@@ -54,14 +54,16 @@ if args.plot:
     plt.show()
 
 
-# extract pupil component
+# extract the pupil
 
-# get the last column (size) from all lines (connected components)
+# get the size from all connected components
+# in the stats, the size is the last column, so we take the -1 column
 cc_sizes = np.array(stats)[:, -1]
 
-# 
-# get the second greater connected component
-# 
+# the connected components function also counts the background
+# thus, in this case, the background will have the max size
+# the pupil will have the second highest size
+# to get the index of the pupil, we take the second greater connected component
 pupil_idx = np.argsort(cc_sizes)[-2]
 
 pupil_left = stats[pupil_idx, cv2.CC_STAT_LEFT]
