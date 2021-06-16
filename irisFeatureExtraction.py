@@ -27,7 +27,6 @@ src = cv2.imread(args.image, cv2.IMREAD_GRAYSCALE)
 avg_kernel = np.ones((5,5), np.float32)/25
 avg = cv2.filter2D(src, -1, avg_kernel)
 
-# plot the image after average filter
 if args.plot:
     plt.subplot(132)
     plt.imshow(avg, cmap='gray')
@@ -39,7 +38,6 @@ if args.plot:
 # binary threshold
 _, bin_avg = cv2.threshold(avg, 50, 255, cv2.THRESH_BINARY_INV)
 
-# plot the result of binary threshold applied to the average filtered image
 if args.plot:
     plt.subplot(132)
     plt.imshow(bin_avg, cmap='gray')
@@ -49,39 +47,22 @@ if args.plot:
 
 
 # connected components
-
 num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(bin_avg, 8, cv2.CV_32S)
-
-print(stats)
-print(num_labels)
-print(labels.shape)
 
 if args.plot:
     plt.imshow(labels)
     plt.show()
 
-print(centroids)
-np_stats = np.array(stats)
-
-print()
-print(np_stats.shape)
-
 
 # extract pupil component
 
 # get the last column (size) from all lines (connected components)
-cc_sizes = np_stats[:, -1]
-print(cc_sizes)
+cc_sizes = np.array(stats)[:, -1]
 
 # 
-# get the second highest value
+# get the second greater connected component
 # 
-pupil_idx = np.argsort(np_stats[:, -1])[-2]
-
-print(pupil_idx)
-sorted_stats = np_stats[np.argsort(np_stats[:, -1])]
-print(sorted_stats)
-print(sorted_stats[:, -2])
+pupil_idx = np.argsort(cc_sizes)[-2]
 
 dst = cv2.cvtColor(src, cv2.COLOR_GRAY2RGB)
 
