@@ -18,27 +18,31 @@ parser.add_argument(
 args = parser.parse_args()
 
 
-
+# read the input grayscale image
 src = cv2.imread(args.image, cv2.IMREAD_GRAYSCALE)
+
+
+# blur filters
 
 avg_kernel = np.ones((5,5), np.float32)/25
 
 avg = cv2.filter2D(src, -1, avg_kernel)
 med = cv2.medianBlur(src, 5)
 
-
 if args.plot:
-
+    # original image
     plt.subplot(131)
     plt.imshow(src)
     plt.xticks([])
     plt.yticks([])
 
+    # image after average filter
     plt.subplot(132)
     plt.imshow(avg)
     plt.xticks([])
     plt.yticks([])
 
+    # original image after median filter
     plt.subplot(133)
     plt.imshow(med)
     plt.xticks([])
@@ -47,23 +51,26 @@ if args.plot:
     plt.show()
     
 
+# binary threshold
+
 _, bin_src = cv2.threshold(src, 50, 255, cv2.THRESH_BINARY_INV)
 _, bin_avg = cv2.threshold(avg, 50, 255, cv2.THRESH_BINARY_INV)
 _, bin_med = cv2.threshold(med, 50, 255, cv2.THRESH_BINARY_INV)
 
-
 if args.plot:
-
+    # binary threshold applied to the original image
     plt.subplot(131)
     plt.imshow(bin_src)
     plt.xticks([])
     plt.yticks([])
 
+    # binary threshold applied to the average filtered image
     plt.subplot(132)
     plt.imshow(bin_avg)
     plt.xticks([])
     plt.yticks([])
 
+    # binary threshold applied to the median filtered image
     plt.subplot(133)
     plt.imshow(bin_med)
     plt.xticks([])
@@ -72,20 +79,36 @@ if args.plot:
     plt.show()
 
 
-#print(bin_avg)
+# connected components
+
 num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(bin_avg, 8, cv2.CV_32S)
 
 print(stats)
 print(num_labels)
 print(labels.shape)
-#plt.imshow(labels)
-#plt.show()
+
+if args.plot:
+    plt.imshow(labels)
+    plt.show()
+
 print(centroids)
 np_stats = np.array(stats)
 
 print()
-print(np_stats[:, -1])
+print(np_stats.shape)
+
+
+# extract pupil component
+
+# get the last column (size) from all lines (connected components)
+cc_sizes = np_stats[:, -1]
+print(cc_sizes)
+
+# 
+# get the second highest value
+# 
 pupil_idx = np.argsort(np_stats[:, -1])[-2]
+
 print(pupil_idx)
 sorted_stats = np_stats[np.argsort(np_stats[:, -1])]
 print(sorted_stats)
@@ -93,10 +116,10 @@ print(sorted_stats[:, -2])
 
 dst = cv2.cvtColor(src, cv2.COLOR_GRAY2RGB)
 
-#for i in range(num_labels):
-#    width = stats[i, cv2.CC_STAT_HEIGHT]
-#    radius = width / 2
-#    dst = cv2.circle(dst, (int(centroids[i,0]), int(centroids[i,1])), int(radius), (0, 0, 255), 2)
+for i in range(num_labels):
+    width = stats[i, cv2.CC_STAT_HEIGHT]
+    radius = width / 2
+    dst = cv2.circle(dst, (int(centroids[i,0]), int(centroids[i,1])), int(radius), (0, 0, 255), 2)
 
 pupil_left = stats[pupil_idx, cv2.CC_STAT_LEFT]
 pupil_top = stats[pupil_idx, cv2.CC_STAT_TOP]
@@ -111,16 +134,17 @@ pupil_cy = int(centroids[pupil_idx,1])
 pupil_region = np.zeros(shape=dst.shape, dtype=np.uint8)
 cv2.circle(pupil_region, (pupil_cx, pupil_cy), int(pupil_radius), (255, 255, 255), cv2.FILLED)
 
-pupil = dst.copy()
+pupil = cv2.cvtColor(src, cv2.COLOR_GRAY2RGB)
 cv2.circle(pupil, (pupil_cx, pupil_cy), int(pupil_radius), (0, 0, 255), 2)
 
 if args.plot:
     plt.imshow(pupil)
     plt.show()
 
-cv2.imwrite('temp.jpg', dst)
+cv2.imwrite('out_pupil.jpg', pupil)
 
 
+# extract iris outer edge
 
 canny_img = cv2.Canny(src, 50, 50)
 
