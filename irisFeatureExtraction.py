@@ -32,19 +32,19 @@ med = cv2.medianBlur(src, 5)
 if args.plot:
     # original image
     plt.subplot(131)
-    plt.imshow(src)
+    plt.imshow(src, cmap='gray')
     plt.xticks([])
     plt.yticks([])
 
     # image after average filter
     plt.subplot(132)
-    plt.imshow(avg)
+    plt.imshow(avg, cmap='gray')
     plt.xticks([])
     plt.yticks([])
 
     # original image after median filter
     plt.subplot(133)
-    plt.imshow(med)
+    plt.imshow(med, cmap='gray')
     plt.xticks([])
     plt.yticks([])
 
@@ -60,19 +60,19 @@ _, bin_med = cv2.threshold(med, 50, 255, cv2.THRESH_BINARY_INV)
 if args.plot:
     # binary threshold applied to the original image
     plt.subplot(131)
-    plt.imshow(bin_src)
+    plt.imshow(bin_src, cmap='gray')
     plt.xticks([])
     plt.yticks([])
 
     # binary threshold applied to the average filtered image
     plt.subplot(132)
-    plt.imshow(bin_avg)
+    plt.imshow(bin_avg, cmap='gray')
     plt.xticks([])
     plt.yticks([])
 
     # binary threshold applied to the median filtered image
     plt.subplot(133)
-    plt.imshow(bin_med)
+    plt.imshow(bin_med, cmap='gray')
     plt.xticks([])
     plt.yticks([])
 
