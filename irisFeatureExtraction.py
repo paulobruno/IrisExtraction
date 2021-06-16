@@ -64,13 +64,6 @@ cc_sizes = np.array(stats)[:, -1]
 # 
 pupil_idx = np.argsort(cc_sizes)[-2]
 
-dst = cv2.cvtColor(src, cv2.COLOR_GRAY2RGB)
-
-for i in range(num_labels):
-    width = stats[i, cv2.CC_STAT_HEIGHT]
-    radius = width / 2
-    dst = cv2.circle(dst, (int(centroids[i,0]), int(centroids[i,1])), int(radius), (0, 0, 255), 2)
-
 pupil_left = stats[pupil_idx, cv2.CC_STAT_LEFT]
 pupil_top = stats[pupil_idx, cv2.CC_STAT_TOP]
 
@@ -81,9 +74,9 @@ pupil_radius = pupil_w / 2
 pupil_cx = int(centroids[pupil_idx,0])
 pupil_cy = int(centroids[pupil_idx,1])
 
-pupil_region = np.zeros(shape=dst.shape, dtype=np.uint8)
+pupil_region = np.zeros(shape=(src.shape + (3,)), dtype=np.uint8)
 cv2.circle(pupil_region, (pupil_cx, pupil_cy), int(pupil_radius), (255, 255, 255), cv2.FILLED)
-
+    
 pupil = cv2.cvtColor(src, cv2.COLOR_GRAY2RGB)
 cv2.circle(pupil, (pupil_cx, pupil_cy), int(pupil_radius), (0, 0, 255), 2)
 
@@ -126,7 +119,7 @@ circles = cv2.HoughCircles(smoothed, cv2.HOUGH_GRADIENT, 1, 20, param1=50, param
 circles = np.uint16(np.around(circles))
 i = circles[0,0]
 
-iris_region = np.zeros(shape=dst.shape, dtype=np.uint8)
+iris_region = np.zeros(shape=(src.shape + (3,)), dtype=np.uint8)
 cv2.circle(iris_region, (i[0],i[1]), i[2], (255,255,255), cv2.FILLED)
 
 iris_src = pupil.copy()
@@ -138,7 +131,8 @@ if args.plot:
     cv2.destroyAllWindows()
 
 
-iris = cv2.bitwise_and(iris_region, dst)
+colored_img = cv2.cvtColor(src, cv2.COLOR_GRAY2BGR)
+iris = cv2.bitwise_and(iris_region, colored_img)
 iris = cv2.bitwise_and(iris, cv2.bitwise_not(pupil_region))
 
 if args.plot:
