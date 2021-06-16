@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import argparse
 
 
+# parse command line args
 parser = argparse.ArgumentParser(
     description="Train an agent in a given scenario. The agent can be trained from scratch or load a trained model. Be careful: if loading a previously trained agent the scenario given should be the same, if not it could break or run as usual but with a poor performance.")
 
@@ -22,60 +23,28 @@ args = parser.parse_args()
 src = cv2.imread(args.image, cv2.IMREAD_GRAYSCALE)
 
 
-# blur filters
-
+# average blur filter
 avg_kernel = np.ones((5,5), np.float32)/25
-
 avg = cv2.filter2D(src, -1, avg_kernel)
-med = cv2.medianBlur(src, 5)
 
+# plot the image after average filter
 if args.plot:
-    # original image
-    plt.subplot(131)
-    plt.imshow(src, cmap='gray')
-    plt.xticks([])
-    plt.yticks([])
-
-    # image after average filter
     plt.subplot(132)
     plt.imshow(avg, cmap='gray')
     plt.xticks([])
     plt.yticks([])
-
-    # original image after median filter
-    plt.subplot(133)
-    plt.imshow(med, cmap='gray')
-    plt.xticks([])
-    plt.yticks([])
-
     plt.show()
     
 
 # binary threshold
-
-_, bin_src = cv2.threshold(src, 50, 255, cv2.THRESH_BINARY_INV)
 _, bin_avg = cv2.threshold(avg, 50, 255, cv2.THRESH_BINARY_INV)
-_, bin_med = cv2.threshold(med, 50, 255, cv2.THRESH_BINARY_INV)
 
+# plot the result of binary threshold applied to the average filtered image
 if args.plot:
-    # binary threshold applied to the original image
-    plt.subplot(131)
-    plt.imshow(bin_src, cmap='gray')
-    plt.xticks([])
-    plt.yticks([])
-
-    # binary threshold applied to the average filtered image
     plt.subplot(132)
     plt.imshow(bin_avg, cmap='gray')
     plt.xticks([])
     plt.yticks([])
-
-    # binary threshold applied to the median filtered image
-    plt.subplot(133)
-    plt.imshow(bin_med, cmap='gray')
-    plt.xticks([])
-    plt.yticks([])
-
     plt.show()
 
 
