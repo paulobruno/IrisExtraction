@@ -66,27 +66,30 @@ cc_sizes = np.array(stats)[:, -1]
 # to get the index of the pupil, we take the second greater connected component
 pupil_idx = np.argsort(cc_sizes)[-2]
 
-pupil_left = stats[pupil_idx, cv2.CC_STAT_LEFT]
-pupil_top = stats[pupil_idx, cv2.CC_STAT_TOP]
-
+# get pupil bounding box
+pupil_x = stats[pupil_idx, cv2.CC_STAT_LEFT]
+pupil_y = stats[pupil_idx, cv2.CC_STAT_TOP]
 pupil_w = stats[pupil_idx, cv2.CC_STAT_WIDTH]
 pupil_h = stats[pupil_idx, cv2.CC_STAT_HEIGHT]
+
 pupil_radius = pupil_w / 2
 
-pupil_cx = int(centroids[pupil_idx,0])
-pupil_cy = int(centroids[pupil_idx,1])
+pupil_cx = int(centroids[pupil_idx, 0])
+pupil_cy = int(centroids[pupil_idx, 1])
 
-pupil_region = np.zeros(shape=(src.shape + (3,)), dtype=np.uint8)
-cv2.circle(pupil_region, (pupil_cx, pupil_cy), int(pupil_radius), (255, 255, 255), cv2.FILLED)
-    
-pupil = cv2.cvtColor(src, cv2.COLOR_GRAY2RGB)
-cv2.circle(pupil, (pupil_cx, pupil_cy), int(pupil_radius), (0, 0, 255), 2)
+# create pupil mask, a black and white image with only the pupil region
+pupil_mask = np.zeros(shape=(src.shape + (3,)), dtype=np.uint8)
+cv2.circle(pupil_mask, (pupil_cx, pupil_cy), int(pupil_radius), (255, 255, 255), cv2.FILLED)
+
+# draw a circle aroung the pupil
+pupil_draw = cv2.cvtColor(src, cv2.COLOR_GRAY2RGB)
+cv2.circle(pupil_draw, (pupil_cx, pupil_cy), int(pupil_radius), (0, 0, 255), 2)
 
 if args.plot:
-    plt.imshow(pupil)
+    plt.imshow(pupil_draw)
     plt.show()
 
-cv2.imwrite('out_pupil.jpg', pupil)
+cv2.imwrite('out_pupil.jpg', pupil_draw)
 
 
 # extract iris outer edge
@@ -124,7 +127,7 @@ i = circles[0,0]
 iris_region = np.zeros(shape=(src.shape + (3,)), dtype=np.uint8)
 cv2.circle(iris_region, (i[0],i[1]), i[2], (255,255,255), cv2.FILLED)
 
-iris_src = pupil.copy()
+iris_src = pupil_draw.copy()
 cv2.circle(iris_src, (i[0],i[1]), i[2], (255,0,0), 2)
 
 if args.plot:
@@ -135,7 +138,7 @@ if args.plot:
 
 colored_img = cv2.cvtColor(src, cv2.COLOR_GRAY2BGR)
 iris = cv2.bitwise_and(iris_region, colored_img)
-iris = cv2.bitwise_and(iris, cv2.bitwise_not(pupil_region))
+iris = cv2.bitwise_and(iris, cv2.bitwise_not(pupil_mask))
 
 if args.plot:
     cv2.imshow('iris', iris)
