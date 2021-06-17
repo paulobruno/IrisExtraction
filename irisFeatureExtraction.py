@@ -33,7 +33,6 @@ if args.plot:
     plt.xticks([])
     plt.yticks([])
     plt.show()
-    
 
 # binary threshold
 _, bin_avg = cv2.threshold(avg, 50, 255, cv2.THRESH_BINARY_INV)
@@ -44,7 +43,6 @@ if args.plot:
     plt.xticks([])
     plt.yticks([])
     plt.show()
-
 
 # connected components
 num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(bin_avg, 8, cv2.CV_32S)
@@ -66,12 +64,8 @@ cc_sizes = np.array(stats)[:, -1]
 # to get the index of the pupil, we take the second greater connected component
 pupil_idx = np.argsort(cc_sizes)[-2]
 
-# get pupil bounding box
-pupil_x = stats[pupil_idx, cv2.CC_STAT_LEFT]
-pupil_y = stats[pupil_idx, cv2.CC_STAT_TOP]
+# get pupil coords and radius
 pupil_w = stats[pupil_idx, cv2.CC_STAT_WIDTH]
-pupil_h = stats[pupil_idx, cv2.CC_STAT_HEIGHT]
-
 pupil_radius = pupil_w / 2
 
 pupil_cx = int(centroids[pupil_idx, 0])
