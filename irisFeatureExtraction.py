@@ -88,8 +88,6 @@ cv2.imwrite('out_pupil.jpg', pupil_draw)
 
 # extract iris outer edge
 
-canny_img = cv2.Canny(src, 50, 50)
-
 smoothed = src
 for i in range(200):
     smoothed = cv2.medianBlur(smoothed, 5)
@@ -97,9 +95,6 @@ for i in range(200):
 edges = cv2.Canny(smoothed, 50, 50)
 
 if args.plot:
-    plt.imshow(canny_img, cmap='gray')
-    plt.show()
-    
     plt.subplot(121)
     plt.imshow(smoothed, cmap='gray')
     plt.xticks([])
