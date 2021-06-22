@@ -22,6 +22,11 @@ args = parser.parse_args()
 # read the input grayscale image
 src = cv2.imread(args.image, cv2.IMREAD_GRAYSCALE)
 
+if args.plot:
+    cv2.imshow('input', src)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
 
 # average blur filter
 avg_kernel = np.ones((5,5), np.float32) / 25
