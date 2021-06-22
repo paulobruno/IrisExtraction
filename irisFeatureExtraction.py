@@ -6,15 +6,19 @@ import argparse
 
 # parse command line args
 parser = argparse.ArgumentParser(
-    description="From a given grayscale eye image, perform iris segmentation and normalization.")
+    description='From a given grayscale eye image, perform iris segmentation and normalization.')
 
 parser.add_argument(
-    "image",
-    help="Input image.")
+    'image',
+    help='Input image.')
 parser.add_argument(
-    "-p", "--plot",
-    action="store_true",
-    help="Plot intermediate results.")
+    '-p', '--plot',
+    action='store_true',
+    help='Plot intermediate results.')
+parser.add_argument(
+    '-s', '--save',
+    action='store_true',
+    help='Save intermediate results.')
 
 args = parser.parse_args()
 
@@ -27,6 +31,9 @@ if args.plot:
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
+if args.save:
+    cv2.imwrite('input.jpg', src)
+
 
 # average blur filter
 avg_kernel = np.ones((5,5), np.float32) / 25
@@ -37,6 +44,9 @@ if args.plot:
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
+if args.save:
+    cv2.imwrite('average_blur.jpg', avg)
+    
 # binary threshold
 _, bin_avg = cv2.threshold(avg, 50, 255, cv2.THRESH_BINARY_INV)
 
@@ -44,6 +54,9 @@ if args.plot:
     cv2.imshow('binary image', bin_avg)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+
+if args.save:
+    cv2.imwrite('binary_image.jpg', bin_avg)
 
 # connected components
 num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(bin_avg, 8, cv2.CV_32S)
@@ -86,7 +99,8 @@ if args.plot:
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-cv2.imwrite('out_pupil.jpg', pupil_draw)
+if args.save:
+    cv2.imwrite('pupil_circle.jpg', pupil_draw)
 
 
 # iris segmentation
@@ -100,6 +114,9 @@ if args.plot:
     cv2.imshow('smoothed', smoothed)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+
+if args.save:
+    cv2.imwrite('smoothed.jpg', smoothed)
 
 # detect all circles using Hough's circle transform
 circles = cv2.HoughCircles(smoothed, cv2.HOUGH_GRADIENT, 1, 20, 
@@ -125,13 +142,17 @@ iris_cx, iris_cy, iris_radius = circles[0,0,0], circles[0,0,1], circles[0,0,2]
 iris_region = np.zeros(shape=(src.shape + (3,)), dtype=np.uint8)
 cv2.circle(iris_region, (iris_cx, iris_cy), iris_radius, (255, 255, 255), cv2.FILLED)
 
-if args.plot:
+if args.plot or args.save:
     iris_plot = pupil_draw.copy()
     cv2.circle(iris_plot, (iris_cx, iris_cy), iris_radius, (255, 0, 0), 2)
 
-    cv2.imshow('iris and pupil detected', iris_plot)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    if args.plot:
+        cv2.imshow('iris and pupil detected', iris_plot)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
+    if args.save:
+        cv2.imwrite('iris_pupil.jpg', iris_plot)
 
 # show only the iris region (excluding the pupil also)
 colored_img = cv2.cvtColor(src, cv2.COLOR_GRAY2BGR)
@@ -142,6 +163,9 @@ if args.plot:
     cv2.imshow('iris', iris)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+    
+if args.save:
+    cv2.imwrite('iris.jpg', iris)
 
 # bounding box of the iris
 # center x is index 0, center y is index 1, and radius is index 2 
@@ -156,6 +180,9 @@ if args.plot:
     cv2.imshow('iris bounding box', iris_bb)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+
+if args.save:
+    cv2.imwrite('iris_bounding_box.jpg', iris_bb)
 
 # TODO: remove eyelid
 
@@ -206,6 +233,9 @@ if args.plot:
     cv2.imshow('iris normalization', norm_img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+    
+if args.save:
+    cv2.imwrite('iris_normalization.jpg', norm_img)
 
 norm_img = cv2.cvtColor(norm_img, cv2.COLOR_BGR2GRAY)
 norm_img = cv2.equalizeHist(norm_img)
@@ -214,3 +244,7 @@ if args.plot:
     cv2.imshow('equalized histogram', norm_img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+    
+if args.save:
+    cv2.imwrite('equalized_normalization.jpg', norm_img)
+
