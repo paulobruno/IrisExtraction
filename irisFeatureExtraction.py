@@ -103,6 +103,15 @@ circles = cv2.HoughCircles(smoothed, cv2.HOUGH_GRADIENT, 1, 20,
 # convert float values to int
 circles = np.uint16(np.around(circles))
 
+if args.plot:
+    hough_circles = cv2.cvtColor(smoothed, cv2.COLOR_GRAY2BGR)
+    for c in circles[0]:
+        cv2.circle(hough_circles, (c[0], c[1]), c[2], (0, 0, 255), 2)
+
+    cv2.imshow('hough circles', hough_circles)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
 # the transform will detect multiple circles, however OpenCV's HoughCircles
 #   sorts the results by 'confidence', therefore we want the first one
 iris_cx, iris_cy, iris_radius = circles[0,0,0], circles[0,0,1], circles[0,0,2]
