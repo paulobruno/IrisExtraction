@@ -84,7 +84,7 @@ if args.plot:
 cv2.imwrite('out_pupil.jpg', pupil_draw)
 
 
-# extract iris outer edge
+# iris segmentation
 
 # smooth the image to better identify the iris
 smoothed = src
@@ -154,61 +154,56 @@ if args.plot:
 
 
 # normalization
-def daugman_normalization(image, height, width, r_in, r_out):       # Daugman归一化，输入为640*480,输出为width*height
-    thetas = np.arange(0, 2 * np.pi, 2 * np.pi / width)  # Theta values
-    print(thetas)
-    print(r_out)
-    #r_out = r_in + r_out
-    print(r_in)
-    print(r_out)
-    # Create empty flatten image
-    flat = np.zeros((height, width, 3), np.uint8)
-    circle_x = int(image.shape[0] // 2)
-    circle_y = int(image.shape[1] // 2)
-    print(circle_x)
-    print(circle_y)
-    print()
 
-    for i in range(width):
-        for j in range(height):
-            theta = thetas[i]  # value of theta coordinate
-            r_pro = j / height  # value of r coordinate(normalized)
-            
-            # get coordinate of boundaries
-            Xi = circle_x + r_in * np.cos(theta)
-            Yi = circle_y + r_in * np.sin(theta)
-            Xo = circle_x + r_out * np.cos(theta)
-            Yo = circle_y + r_out * np.sin(theta)
+# this normalization comes from Chen Yifeng's IrisReco, I just rearranged and
+#   renamed some parts
+# https://github.com/YifengChen94/IrisReco/blob/ff35dafa2fe10cc20b23d8f74b252110fd59cfc6/python/iris_processing.py
 
-            # the matched cartesian coordinates for the polar coordinates
-            Xc = (1 - r_pro) * Xi + r_pro * Xo
-            #print(r_pro)
-            #print(Xi)
-            #print(Xo)
-            #print(Yi)
-            #print(Yo)
-            #print()
-            Yc = (1 - r_pro) * Yi + r_pro * Yo
+# define the width and height of the resulting normalized image
+norm_h = 60
+norm_w = 360
 
-            color = image[int(Xc)][int(Yc)]  # color of the pixel
+# angular coordinate values
+thetas = np.arange(0, 2 * np.pi, 2 * np.pi / norm_w)  
 
-            flat[j][i] = color
-    return flat  # liang
-    
+# create an empty image to hold the flatten normalization
+norm_img = np.zeros((norm_h, norm_w, 3), np.uint8)
 
-print(iris_bb.shape)
+# since the iris segmentation is a square, its center is just radius
+iris_center = iris_radius
 
-normal = daugman_normalization(iris_bb, 60, 360, pupil_radius, iris_radius)
+# compute pixel values in the normalized image using polar coordinate system
+for col in range(norm_w):
+    for row in range(norm_h):
+        # value of the column angular coordinate
+        theta = thetas[col]
+        
+        # value of the row (normalized) radial coordinate
+        r = row / norm_h
+        
+        # get coordinate of boundaries in polar coordinates
+        pupil_x = iris_center + pupil_radius * np.cos(theta)
+        pupil_y = iris_center + pupil_radius * np.sin(theta)
+        
+        iris_x = iris_center + iris_radius * np.cos(theta)
+        iris_y = iris_center + iris_radius * np.sin(theta)
 
+        # cartesian coordinates for the polar coordinates
+        pixel_x = (1.0 - r) * pupil_x + r * iris_x
+        pixel_y = (1.0 - r) * pupil_y + r * iris_y
+
+        # set pixels color from the iris image
+        norm_img[row][col] = iris_bb[int(pixel_x)][int(pixel_y)]
+        
 if args.plot:
-    cv2.imshow('normalized', normal)
+    cv2.imshow('iris normalization', norm_img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-normal = cv2.cvtColor(normal, cv2.COLOR_BGR2GRAY)
-normal = cv2.equalizeHist(normal)
+norm_img = cv2.cvtColor(norm_img, cv2.COLOR_BGR2GRAY)
+norm_img = cv2.equalizeHist(norm_img)
 
 if args.plot:
-    cv2.imshow('normalized', normal)
+    cv2.imshow('equalized histogram', norm_img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
