@@ -157,30 +157,6 @@ if args.plot:
     cv2.destroyAllWindows()
 
 
-img_cut = src[y_0:y_t, x_0:x_t]
-
-if args.plot:
-    cv2.imshow('cut', img_cut)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-edges = cv2.Canny(img_cut,50,150,apertureSize = 3)
-if args.plot:
-    cv2.imshow('edges', edges)
-    cv2.waitKey(0)
-
-lines = cv2.HoughLinesP(edges, 1, np.pi/180, 100, minLineLength=50, maxLineGap=10)
-if (lines):
-    for line in lines:
-        x1,y1,x2,y2 = line[0]
-        cv2.line(img_cut,(x1,y1),(x2,y2),(0,255,0),2)
-
-if args.plot:
-    cv2.imshow('lines', img_cut)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-
 # normalization
 def daugman_normalization(image, height, width, r_in, r_out):       # Daugman归一化，输入为640*480,输出为width*height
     thetas = np.arange(0, 2 * np.pi, 2 * np.pi / width)  # Theta values
