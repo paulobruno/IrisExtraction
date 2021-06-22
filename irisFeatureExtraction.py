@@ -24,29 +24,26 @@ src = cv2.imread(args.image, cv2.IMREAD_GRAYSCALE)
 
 
 # average blur filter
-avg_kernel = np.ones((5,5), np.float32)/25
+avg_kernel = np.ones((5,5), np.float32) / 25
 avg = cv2.filter2D(src, -1, avg_kernel)
 
 if args.plot:
-    plt.subplot(132)
-    plt.imshow(avg, cmap='gray')
-    plt.xticks([])
-    plt.yticks([])
-    plt.show()
+    cv2.imshow('average blur', avg)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 # binary threshold
 _, bin_avg = cv2.threshold(avg, 50, 255, cv2.THRESH_BINARY_INV)
 
 if args.plot:
-    plt.subplot(132)
-    plt.imshow(bin_avg, cmap='gray')
-    plt.xticks([])
-    plt.yticks([])
-    plt.show()
+    cv2.imshow('binary image', bin_avg)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 # connected components
 num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(bin_avg, 8, cv2.CV_32S)
 
+# TODO: compute a colormap for the label's image and replace matplotlib here
 if args.plot:
     plt.imshow(labels)
     plt.show()
@@ -80,8 +77,9 @@ pupil_draw = cv2.cvtColor(src, cv2.COLOR_GRAY2RGB)
 cv2.circle(pupil_draw, (pupil_cx, pupil_cy), int(pupil_radius), (0, 0, 255), 2)
 
 if args.plot:
-    plt.imshow(pupil_draw)
-    plt.show()
+    cv2.imshow('pupil circle', pupil_draw)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 cv2.imwrite('out_pupil.jpg', pupil_draw)
 
@@ -97,17 +95,13 @@ for i in range(200):
 edges = cv2.Canny(smoothed, 50, 50)
 
 if args.plot:
-    plt.subplot(121)
-    plt.imshow(smoothed, cmap='gray')
-    plt.xticks([])
-    plt.yticks([])
+    cv2.imshow('smoothed', smoothed)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
     
-    plt.subplot(122)
-    plt.imshow(edges, cmap='gray')
-    plt.xticks([])
-    plt.yticks([])
-    
-    plt.show()
+    cv2.imshow('edges', edges)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 # detect all circles using Hough's circle transform
 circles = cv2.HoughCircles(smoothed, cv2.HOUGH_GRADIENT, 1, 20, 
@@ -205,12 +199,14 @@ print(iris_bb.shape)
 normal = daugman_normalization(iris_bb, 60, 360, pupil_radius, i[2])
 
 if args.plot:
-    plt.imshow(normal)
-    plt.show()
+    cv2.imshow('normalized', normal)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 normal = cv2.cvtColor(normal, cv2.COLOR_BGR2GRAY)
 normal = cv2.equalizeHist(normal)
 
 if args.plot:
-    plt.imshow(normal, cmap='gray')
-    plt.show()
+    cv2.imshow('normalized', normal)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
