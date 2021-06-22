@@ -108,25 +108,31 @@ if args.plot:
     plt.yticks([])
     
     plt.show()
-    
 
-circles = cv2.HoughCircles(smoothed, cv2.HOUGH_GRADIENT, 1, 20, param1=50, param2=30, minRadius=int(pupil_radius+10), maxRadius=int(pupil_radius*10))
+# detect all circles using Hough's circle transform
+circles = cv2.HoughCircles(smoothed, cv2.HOUGH_GRADIENT, 1, 20, 
+    param1=50, param2=30, minRadius=int(pupil_radius+10), maxRadius=int(pupil_radius*10))
 
+# convert float values to int
 circles = np.uint16(np.around(circles))
+
+# the transform will detect multiple circles, however OpenCV's HoughCircles
+#   sorts the results by 'confidence', therefore we want the first one
 i = circles[0,0]
 
+# draw a binary image of only the iris region
 iris_region = np.zeros(shape=(src.shape + (3,)), dtype=np.uint8)
 cv2.circle(iris_region, (i[0],i[1]), i[2], (255,255,255), cv2.FILLED)
 
-iris_src = pupil_draw.copy()
-cv2.circle(iris_src, (i[0],i[1]), i[2], (255,0,0), 2)
-
 if args.plot:
-    cv2.imshow('detected circles', iris_src)
+    iris_plot = pupil_draw.copy()
+    cv2.circle(iris_plot, (i[0],i[1]), i[2], (255,0,0), 2)
+
+    cv2.imshow('iris and pupil detected', iris_plot)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-
+# show only the iris region (excluding the pupil also)
 colored_img = cv2.cvtColor(src, cv2.COLOR_GRAY2BGR)
 iris = cv2.bitwise_and(iris_region, colored_img)
 iris = cv2.bitwise_and(iris, cv2.bitwise_not(pupil_mask))
@@ -136,16 +142,17 @@ if args.plot:
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-
+# bounding box of the iris
+# center x is index 0, center y is index 1, and radius is index 2 
 x_0 = i[0] - i[2]
 x_t = i[0] + i[2]
 y_0 = i[1] - i[2]
 y_t = i[1] + i[2]
 
-so_iris = iris[y_0:y_t, x_0:x_t]
+iris_bb = iris[y_0:y_t, x_0:x_t]
 
 if args.plot:
-    cv2.imshow('so_iris', so_iris)
+    cv2.imshow('iris bounding box', iris_bb)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
@@ -174,6 +181,7 @@ if args.plot:
     cv2.destroyAllWindows()
 
 
+# normalization
 def daugman_normalization(image, height, width, r_in, r_out):       # Daugman归一化，输入为640*480,输出为width*height
     thetas = np.arange(0, 2 * np.pi, 2 * np.pi / width)  # Theta values
     print(thetas)
@@ -216,9 +224,9 @@ def daugman_normalization(image, height, width, r_in, r_out):       # Daugman归
     return flat  # liang
     
 
-print(so_iris.shape)
+print(iris_bb.shape)
 
-normal = daugman_normalization(so_iris, 60, 360, pupil_radius, i[2])
+normal = daugman_normalization(iris_bb, 60, 360, pupil_radius, i[2])
 
 if args.plot:
     plt.imshow(normal)
