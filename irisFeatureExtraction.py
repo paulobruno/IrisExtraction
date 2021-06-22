@@ -105,15 +105,15 @@ circles = np.uint16(np.around(circles))
 
 # the transform will detect multiple circles, however OpenCV's HoughCircles
 #   sorts the results by 'confidence', therefore we want the first one
-i = circles[0,0]
+iris_cx, iris_cy, iris_radius = circles[0,0,0], circles[0,0,1], circles[0,0,2]
 
 # draw a binary image of only the iris region
 iris_region = np.zeros(shape=(src.shape + (3,)), dtype=np.uint8)
-cv2.circle(iris_region, (i[0],i[1]), i[2], (255,255,255), cv2.FILLED)
+cv2.circle(iris_region, (iris_cx, iris_cy), iris_radius, (255, 255, 255), cv2.FILLED)
 
 if args.plot:
     iris_plot = pupil_draw.copy()
-    cv2.circle(iris_plot, (i[0],i[1]), i[2], (255,0,0), 2)
+    cv2.circle(iris_plot, (iris_cx, iris_cy), iris_radius, (255, 0, 0), 2)
 
     cv2.imshow('iris and pupil detected', iris_plot)
     cv2.waitKey(0)
@@ -131,10 +131,10 @@ if args.plot:
 
 # bounding box of the iris
 # center x is index 0, center y is index 1, and radius is index 2 
-x_0 = i[0] - i[2]
-x_t = i[0] + i[2]
-y_0 = i[1] - i[2]
-y_t = i[1] + i[2]
+x_0 = iris_cx - iris_radius
+x_t = iris_cx + iris_radius
+y_0 = iris_cy - iris_radius
+y_t = iris_cy + iris_radius
 
 iris_bb = iris[y_0:y_t, x_0:x_t]
 
@@ -189,7 +189,7 @@ def daugman_normalization(image, height, width, r_in, r_out):       # Daugman归
 
 print(iris_bb.shape)
 
-normal = daugman_normalization(iris_bb, 60, 360, pupil_radius, i[2])
+normal = daugman_normalization(iris_bb, 60, 360, pupil_radius, iris_radius)
 
 if args.plot:
     cv2.imshow('normalized', normal)
