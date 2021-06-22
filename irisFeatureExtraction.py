@@ -88,10 +88,12 @@ cv2.imwrite('out_pupil.jpg', pupil_draw)
 
 # extract iris outer edge
 
+# smooth the image to better identify the iris
 smoothed = src
 for i in range(200):
     smoothed = cv2.medianBlur(smoothed, 5)
 
+# compute all borders in the image
 edges = cv2.Canny(smoothed, 50, 50)
 
 if args.plot:
