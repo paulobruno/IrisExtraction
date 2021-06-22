@@ -91,15 +91,8 @@ smoothed = src
 for i in range(200):
     smoothed = cv2.medianBlur(smoothed, 5)
 
-# compute all borders in the image
-edges = cv2.Canny(smoothed, 50, 50)
-
 if args.plot:
     cv2.imshow('smoothed', smoothed)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-    
-    cv2.imshow('edges', edges)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
