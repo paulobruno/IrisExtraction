@@ -6,15 +6,15 @@ import argparse
 
 # parse command line args
 parser = argparse.ArgumentParser(
-    description="Train an agent in a given scenario. The agent can be trained from scratch or load a trained model. Be careful: if loading a previously trained agent the scenario given should be the same, if not it could break or run as usual but with a poor performance.")
+    description="From a given grayscale eye image, perform iris segmentation and normalization.")
 
 parser.add_argument(
     "image",
-    help="imagem.")
+    help="Input image.")
 parser.add_argument(
     "-p", "--plot",
     action="store_true",
-    help="plot imagens.")
+    help="Plot intermediate results.")
 
 args = parser.parse_args()
 
